@@ -129,16 +129,17 @@ func TestInsert(t *testing.T) {
 		t.Fail()
 	}
 
+	lst.Append(41)
 	lst.Append(42)
 	lst.Append(44)
-	err = lst.Insert(1, 43)
+	err = lst.Insert(2, 43)
 	if err != nil {
 		t.Error()
 	}
-	if lst.head.next.label != 43 {
+	if lst.head.next.next.label != 43 {
 		t.Fail()
 	}
-	if lst.Length() != 3 {
+	if lst.Length() != 4 {
 		t.Fail()
 	}
 

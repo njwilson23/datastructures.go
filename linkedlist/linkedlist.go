@@ -21,23 +21,18 @@ type Node struct {
 
 // LinkedList contains the header Node of an acyclic doubly-linked list
 type LinkedList struct {
-	head *Node
+	head   *Node
+	length int
 }
 
 // New creates a new LinkedList with *initialValue* in the prev position
 func New() *LinkedList {
-	return &LinkedList{nil}
+	return &LinkedList{nil, 0}
 }
 
 // Length returns the length of a linked list
 func (lst *LinkedList) Length() int {
-	node := lst.head
-	index := 0
-	for node != nil {
-		index++
-		node = node.next
-	}
-	return index
+	return lst.length
 }
 
 // Get returns the label of the node at position *index*.
@@ -47,15 +42,11 @@ func (lst *LinkedList) Get(index int) (int, error) {
 	if node == nil {
 		return 0, errors.New("empty list")
 	}
-	if index < 0 {
-		return 0, errors.New("index may not be negative")
+	if index < 0 || index >= lst.length {
+		return 0, errors.New("index error")
 	}
 	for i := 0; i != index; i++ {
-		if node.next != nil {
-			node = node.next
-		} else {
-			return 0, errors.New("index error")
-		}
+		node = node.next
 	}
 	return node.label, nil
 }
@@ -67,15 +58,11 @@ func (lst *LinkedList) Set(index int, label int) error {
 	if node == nil {
 		return errors.New("empty list")
 	}
-	if index < 0 {
-		return errors.New("index may not be negative")
+	if index < 0 || index >= lst.length {
+		return errors.New("index error")
 	}
 	for i := 0; i != index; i++ {
-		if node.next != nil {
-			node = node.next
-		} else {
-			return errors.New("index error")
-		}
+		node = node.next
 	}
 	node.label = label
 	return nil
@@ -86,6 +73,7 @@ func (lst *LinkedList) Set(index int, label int) error {
 func (lst *LinkedList) Append(label int) int {
 	if lst.head == nil {
 		lst.head = &Node{nil, nil, label}
+		lst.length++
 		return 1
 	}
 
@@ -96,37 +84,34 @@ func (lst *LinkedList) Append(label int) int {
 		index++
 	}
 	node.next = &Node{node, nil, label}
-	return index + 1
+	lst.length++
+	return lst.length
 }
 
 // Prepend adds a node to the beginning of the linked list and
-// returns 0
+// returns the new list length
 func (lst *LinkedList) Prepend(label int) int {
 	if lst.head == nil {
 		lst.head = &Node{nil, nil, label}
+		lst.length++
 		return 0
 	}
 
 	node := lst.head
 	lst.head = &Node{nil, node, label}
 	node.prev = lst.head
-	return 0
+	lst.length++
+	return lst.length
 }
 
 // Insert places a new Node in the middle of a linked list, or returns an error
 func (lst *LinkedList) Insert(index int, label int) error {
-	if index < 0 {
-		return errors.New("index may not be negative")
-	}
-	node := lst.head
-	if node == nil {
-		return errors.New("empty list")
+	if index < 0 || index >= lst.length {
+		return errors.New("index error")
 	}
 
+	node := lst.head
 	for i := 1; i != index; i++ {
-		if node.next == nil {
-			return errors.New("index error")
-		}
 		node = node.next
 	}
 
@@ -135,6 +120,7 @@ func (lst *LinkedList) Insert(index int, label int) error {
 		node.next.prev = newNode
 	}
 	node.next = newNode
+	lst.length++
 	return nil
 }
 
@@ -161,5 +147,6 @@ func (lst *LinkedList) Delete(index int) (int, error) {
 	if node.next != nil {
 		node.next.prev = node.prev
 	}
+	lst.length--
 	return node.label, nil
 }
