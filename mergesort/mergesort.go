@@ -20,19 +20,17 @@ func min(a, b int) int {
 
 // MergeSort implements an "bottom-up" non-recursive merge sort algorithm
 func MergeSort(sortable []int) []int {
-	var left, right, working []int
+	var left, right []int
 	mergeSize := 1
 	n := len(sortable)
 	for mergeSize <= n {
-		working = []int{}
 		i := 0
 		for i < n {
 			left = sortable[i : i+mergeSize]
 			right = sortable[i+mergeSize : min(n, i+2*mergeSize)]
-			working = append(working, merge(left, right)...)
+			sortable = append(sortable[:i], append(merge(left, right), sortable[min(n, i+2*mergeSize):]...)...)
 			i = i + 2*mergeSize
 		}
-		sortable = working
 		mergeSize = mergeSize * 2
 	}
 	return sortable
