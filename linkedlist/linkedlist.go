@@ -16,7 +16,7 @@ import (
 type Node struct {
 	prev  *Node
 	next  *Node
-	label int
+	value interface{}
 }
 
 // LinkedList contains the header Node of an acyclic doubly-linked list
@@ -35,9 +35,9 @@ func (lst *LinkedList) Length() int {
 	return lst.length
 }
 
-// Get returns the label of the node at position *index*.
+// Get returns the value at position *index*.
 // If *index* is out of bounds, returns an error.
-func (lst *LinkedList) Get(index int) (int, error) {
+func (lst *LinkedList) Get(index int) (interface{}, error) {
 	node := lst.head
 	if node == nil {
 		return 0, errors.New("empty list")
@@ -48,12 +48,12 @@ func (lst *LinkedList) Get(index int) (int, error) {
 	for i := 0; i != index; i++ {
 		node = node.next
 	}
-	return node.label, nil
+	return node.value, nil
 }
 
-// Set sets the label of the node at position *index*
+// Set sets the value at position *index*
 // If *index* is out of bounds, returns an error.
-func (lst *LinkedList) Set(index int, label int) error {
+func (lst *LinkedList) Set(index int, value interface{}) error {
 	node := lst.head
 	if node == nil {
 		return errors.New("empty list")
@@ -64,15 +64,15 @@ func (lst *LinkedList) Set(index int, label int) error {
 	for i := 0; i != index; i++ {
 		node = node.next
 	}
-	node.label = label
+	node.value = value
 	return nil
 }
 
 // Append adds a node to the end of the linked list and returns
 // the new length
-func (lst *LinkedList) Append(label int) int {
+func (lst *LinkedList) Append(value interface{}) int {
 	if lst.head == nil {
-		lst.head = &Node{nil, nil, label}
+		lst.head = &Node{nil, nil, value}
 		lst.length++
 		return 1
 	}
@@ -83,29 +83,29 @@ func (lst *LinkedList) Append(label int) int {
 		node = node.next
 		index++
 	}
-	node.next = &Node{node, nil, label}
+	node.next = &Node{node, nil, value}
 	lst.length++
 	return lst.length
 }
 
 // Prepend adds a node to the beginning of the linked list and
 // returns the new list length
-func (lst *LinkedList) Prepend(label int) int {
+func (lst *LinkedList) Prepend(value interface{}) int {
 	if lst.head == nil {
-		lst.head = &Node{nil, nil, label}
+		lst.head = &Node{nil, nil, value}
 		lst.length++
 		return 0
 	}
 
 	node := lst.head
-	lst.head = &Node{nil, node, label}
+	lst.head = &Node{nil, node, value}
 	node.prev = lst.head
 	lst.length++
 	return lst.length
 }
 
 // Insert places a new Node in the middle of a linked list, or returns an error
-func (lst *LinkedList) Insert(index int, label int) error {
+func (lst *LinkedList) Insert(index int, value interface{}) error {
 	if index < 0 || index >= lst.length {
 		return errors.New("index error")
 	}
@@ -115,7 +115,7 @@ func (lst *LinkedList) Insert(index int, label int) error {
 		node = node.next
 	}
 
-	newNode := &Node{node, node.next, label}
+	newNode := &Node{node, node.next, value}
 	if node.next != nil {
 		node.next.prev = newNode
 	}
@@ -125,8 +125,8 @@ func (lst *LinkedList) Insert(index int, label int) error {
 }
 
 // Delete removes the node at *index* and returns the deleted
-// nodes' label. If *index* is out of bounds, returns an error.
-func (lst *LinkedList) Delete(index int) (int, error) {
+// nodes' value. If *index* is out of bounds, returns an error.
+func (lst *LinkedList) Delete(index int) (interface{}, error) {
 	if lst.head == nil {
 		return 0, errors.New("empty list")
 	}
@@ -148,5 +148,5 @@ func (lst *LinkedList) Delete(index int) (int, error) {
 		node.next.prev = node.prev
 	}
 	lst.length--
-	return node.label, nil
+	return node.value, nil
 }

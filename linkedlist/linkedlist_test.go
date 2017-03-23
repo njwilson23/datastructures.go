@@ -31,12 +31,12 @@ func TestNew(t *testing.T) {
 func TestAppend(t *testing.T) {
 	lst := New()
 	lst.Append(42)
-	if lst.head.label != 42 {
+	if lst.head.value.(int) != 42 {
 		t.Fail()
 	}
 
 	lst.Append(63)
-	if lst.head.next.label != 63 {
+	if lst.head.next.value.(int) != 63 {
 		t.Fail()
 	}
 
@@ -49,12 +49,12 @@ func TestAppend(t *testing.T) {
 func TestPrepend(t *testing.T) {
 	lst := New()
 	lst.Prepend(42)
-	if lst.head.label != 42 {
+	if lst.head.value.(int) != 42 {
 		t.Fail()
 	}
 
 	lst.Prepend(63)
-	if lst.head.label != 63 {
+	if lst.head.value.(int) != 63 {
 		t.Fail()
 	}
 
@@ -68,12 +68,12 @@ func TestGet(t *testing.T) {
 	lst.Prepend(42)
 	lst.Append(63)
 
-	var label int
+	var label interface{}
 	label, err := lst.Get(0)
 	if err != nil {
 		t.Error()
 	}
-	if label != 42 {
+	if label.(int) != 42 {
 		t.Fail()
 	}
 
@@ -81,7 +81,7 @@ func TestGet(t *testing.T) {
 	if err != nil {
 		t.Error()
 	}
-	if label != 63 {
+	if label.(int) != 63 {
 		t.Fail()
 	}
 
@@ -103,11 +103,11 @@ func TestSet(t *testing.T) {
 
 	lst.Set(0, -42)
 	lst.Set(1, 17)
-	if lst.head.label != -42 {
+	if lst.head.value.(int) != -42 {
 		t.Fail()
 	}
 
-	if lst.head.next.label != 17 {
+	if lst.head.next.value.(int) != 17 {
 		t.Fail()
 	}
 
@@ -136,7 +136,7 @@ func TestInsert(t *testing.T) {
 	if err != nil {
 		t.Error()
 	}
-	if lst.head.next.next.label != 43 {
+	if lst.head.next.next.value.(int) != 43 {
 		t.Fail()
 	}
 	if lst.Length() != 4 {
@@ -169,7 +169,7 @@ func TestDelete(t *testing.T) {
 	if err != nil {
 		t.Error()
 	}
-	if label != 63 {
+	if label.(int) != 63 {
 		t.Fail()
 	}
 	if lst.Length() != 2 {
