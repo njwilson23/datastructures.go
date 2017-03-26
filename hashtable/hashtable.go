@@ -7,16 +7,20 @@ import (
 	"github.com/njwilson23/datastructures/linkedlist"
 )
 
-var KEY_NOT_FOUND_ERROR = errors.New("key not found")
+var KEY_ERROR = errors.New("key not found")
+
+type Hashable interface {
+	Hash() int
+}
 
 type HashTable struct {
 	Size     int
-	array    []linkedlist.LinkedList
-	hashFunc func(string) int
+	array    []*linkedlist.LinkedList
+	hashFunc func(int) int
 }
 
 type KeyValuePair struct {
-	key   string
+	key   Hashable
 	value interface{}
 }
 
@@ -28,39 +32,38 @@ func sumRune(summable []rune) int {
 	return sum
 }
 
-func stringToInt(s string) int {
-	r := []rune(s)
-	return sumRune(r)
-}
+type HashString string
 
-func divisionHash(val, size int) int {
-	return val - val/size
-}
+func (hs HashString) Hash() int { return sumRune([]rune(string(hs))) }
 
-func multiplicationHash(val, size int) int {
-	c := 0.5*math.Sqrt(5) - 0.5 // suggested by Knuth
-	return int(math.Floor(float64(size) * float64(val) * math.Mod(c, 1.0)))
+func divisionHash(val, size int) int { return val - val/size }
+
+func multiplicationHash(val, size int, c float64) int {
+	return int(math.Floor(float64(size) * math.Mod(float64(val)*c, 1.0)))
 }
 
 func InitHashTable(size int) *HashTable {
-	array := make([]linkedlist.LinkedList, size)
-	ht := HashTable{size, array, stringToInt}
+	array := make([]*linkedlist.LinkedList, size)
+	for i := range array {
+		array[i] = linkedlist.New()
+	}
+	c := 0.5*math.Sqrt(5) - 0.5 // suggested by Knuth
+	ht := HashTable{size, array, func(v int) int { return multiplicationHash(v, size, c) }}
 	return &ht
 }
 
-func (ht *HashTable) Insert(key string, value interface{}) error {
-	hashInt := stringToInt(key)
-	arrayPos := divisionHash(hashInt, ht.Size)
-	ht.array[arrayPos].Append(KeyValuePair{key, value})
+func (ht *HashTable) Insert(key Hashable, value interface{}) error {
+	arrayPos := ht.hashFunc(key.Hash())
+	lst := ht.array[arrayPos]
+	lst.Append(KeyValuePair{key, value})
 	return nil
 }
 
-func (ht *HashTable) Get(key string) (interface{}, error) {
+func (ht *HashTable) Get(key Hashable) (interface{}, error) {
 	var kv KeyValuePair
-	hashInt := stringToInt(key)
-	arrayPos := divisionHash(hashInt, ht.Size)
-	list := ht.array[arrayPos]
-	node := list.Head
+	arrayPos := ht.hashFunc(key.Hash())
+	lst := ht.array[arrayPos]
+	node := lst.Head
 	for node != nil {
 		kv = node.Value.(KeyValuePair)
 		if kv.key == key {
@@ -68,26 +71,24 @@ func (ht *HashTable) Get(key string) (interface{}, error) {
 		}
 		node = node.Next
 	}
-	return nil, KEY_NOT_FOUND_ERROR
+	return nil, KEY_ERROR
 }
 
-func (ht *HashTable) Delete(key string) error {
+func (ht *HashTable) Delete(key Hashable) error {
 	var kv KeyValuePair
-	hashInt := stringToInt(key)
-	arrayPos := divisionHash(hashInt, ht.Size)
+	arrayPos := ht.hashFunc(key.Hash())
 
-	list := ht.array[arrayPos]
-	node := list.Head
+	lst := ht.array[arrayPos]
+	node := lst.Head
 	index := 0
 	for node != nil {
 		kv = node.Value.(KeyValuePair)
 		if kv.key == key {
-			list.Delete(index)
-			ht.array[arrayPos] = list
+			lst.Delete(index)
 			return nil
 		}
 		index++
 		node = node.Next
 	}
-	return KEY_NOT_FOUND_ERROR
+	return KEY_ERROR
 }

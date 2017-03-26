@@ -1,6 +1,7 @@
 package hashtable
 
 import (
+	"math"
 	"testing"
 )
 
@@ -17,8 +18,8 @@ func TestSumRune(t *testing.T) {
 }
 
 func TestStringToInt(t *testing.T) {
-	s := "bees and oats"
-	sum := stringToInt(s)
+	s := HashString("bees and oats")
+	sum := s.Hash()
 	if sum != 1225 {
 		t.Fail()
 	}
@@ -26,24 +27,24 @@ func TestStringToInt(t *testing.T) {
 
 func TestHashTable(t *testing.T) {
 	var err error
-	ht := InitHashTable(5000)
+	ht := InitHashTable(int(math.Pow(2, 14)))
 
-	err = ht.Insert("colour", "#4682b4")
+	err = ht.Insert(HashString("colour"), "#4682b4")
 	if err != nil {
 		t.Error()
 	}
 
-	err = ht.Insert("age", "unknown")
+	err = ht.Insert(HashString("age"), "unknown")
 	if err != nil {
 		t.Error()
 	}
 
-	err = ht.Insert("size", "large")
+	err = ht.Insert(HashString("size"), "large")
 	if err != nil {
 		t.Error()
 	}
 
-	value, err := ht.Get("colour")
+	value, err := ht.Get(HashString("colour"))
 	if err != nil {
 		t.Error()
 	}
@@ -54,21 +55,21 @@ func TestHashTable(t *testing.T) {
 
 func TestDelete(t *testing.T) {
 	var err error
-	ht := InitHashTable(5000)
+	ht := InitHashTable(int(math.Pow(2, 14)))
 
-	err = ht.Insert("colour", "#4682b4")
+	err = ht.Insert(HashString("colour"), "#4682b4")
 	if err != nil {
 		t.Error()
 	}
 
-	err = ht.Insert("age", "unknown")
+	err = ht.Insert(HashString("age"), "unknown")
 	if err != nil {
 		t.Error()
 	}
 
-	ht.Delete("colour")
-	_, err = ht.Get("colour")
-	if err != KEY_NOT_FOUND_ERROR {
+	ht.Delete(HashString("colour"))
+	_, err = ht.Get(HashString("colour"))
+	if err != KEY_ERROR {
 		t.Error()
 	}
 }
