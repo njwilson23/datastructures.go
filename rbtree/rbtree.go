@@ -59,10 +59,10 @@ func (n *Node) isSentinel() bool {
 // rotation:
 //
 //       [n]                          [y]
-//      /    \                         /   \
-//     a    [y]        becomes       [n]    c
+//      /   \                        /   \
+//     a    [y]        becomes     [n]    c
 //         /   \                  /   \
-//        b      c                a      b
+//        b     c                a     b
 //
 // and in a right rotation, the operation is reversed. Note that the order
 // of child nodes a, b, and c remains the same, but that a is now deeper, and c
@@ -183,7 +183,7 @@ func (tree *RedBlackTree) rebalanceInsert(z *Node) {
 				// The situation looks like this:
 				//
 				//        black
-				//      /       \
+				//      /      \
 				//    red      red (y)
 				//    /
 				//  red (z)
@@ -199,7 +199,7 @@ func (tree *RedBlackTree) rebalanceInsert(z *Node) {
 				// a right child.
 				//
 				//        black
-				//      /       \
+				//      /      \
 				//    red      black (y)
 				//      \
 				//     red (z)
@@ -207,8 +207,8 @@ func (tree *RedBlackTree) rebalanceInsert(z *Node) {
 				// By rotating z's parent, we obtain
 				//
 				//        black
-				//      /       \
-				//    red  (t)   black (y)
+				//      /      \
+				//    red (t)  black (y)
 				//    /
 				//  red (z)
 				//
@@ -222,8 +222,8 @@ func (tree *RedBlackTree) rebalanceInsert(z *Node) {
 				// In the third case, the uncle is black and z is a left child.
 				//
 				//        black
-				//      /       \
-				//    red  (p)   black (y)
+				//      /      \
+				//    red (p)  black (y)
 				//    /
 				//  red (z)
 				//
@@ -232,7 +232,7 @@ func (tree *RedBlackTree) rebalanceInsert(z *Node) {
 				//
 				//      black (p)
 				//      /       \
-				//    red  (z)   red
+				//    red (z)   red
 				//                \
 				//              black (y)
 				//
