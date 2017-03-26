@@ -14,14 +14,14 @@ import (
 
 // Node is a linked list item
 type Node struct {
-	prev  *Node
-	next  *Node
-	value interface{}
+	Prev  *Node
+	Next  *Node
+	Value interface{}
 }
 
 // LinkedList contains the header Node of an acyclic doubly-linked list
 type LinkedList struct {
-	head   *Node
+	Head   *Node
 	length int
 }
 
@@ -38,7 +38,7 @@ func (lst *LinkedList) Length() int {
 // Get returns the value at position *index*.
 // If *index* is out of bounds, returns an error.
 func (lst *LinkedList) Get(index int) (interface{}, error) {
-	node := lst.head
+	node := lst.Head
 	if node == nil {
 		return 0, errors.New("empty list")
 	}
@@ -46,15 +46,15 @@ func (lst *LinkedList) Get(index int) (interface{}, error) {
 		return 0, errors.New("index error")
 	}
 	for i := 0; i != index; i++ {
-		node = node.next
+		node = node.Next
 	}
-	return node.value, nil
+	return node.Value, nil
 }
 
 // Set sets the value at position *index*
 // If *index* is out of bounds, returns an error.
 func (lst *LinkedList) Set(index int, value interface{}) error {
-	node := lst.head
+	node := lst.Head
 	if node == nil {
 		return errors.New("empty list")
 	}
@@ -62,28 +62,28 @@ func (lst *LinkedList) Set(index int, value interface{}) error {
 		return errors.New("index error")
 	}
 	for i := 0; i != index; i++ {
-		node = node.next
+		node = node.Next
 	}
-	node.value = value
+	node.Value = value
 	return nil
 }
 
 // Append adds a node to the end of the linked list and returns
 // the new length
 func (lst *LinkedList) Append(value interface{}) int {
-	if lst.head == nil {
-		lst.head = &Node{nil, nil, value}
+	if lst.Head == nil {
+		lst.Head = &Node{nil, nil, value}
 		lst.length++
 		return 1
 	}
 
-	node := lst.head
+	node := lst.Head
 	index := 0
-	for node.next != nil {
-		node = node.next
+	for node.Next != nil {
+		node = node.Next
 		index++
 	}
-	node.next = &Node{node, nil, value}
+	node.Next = &Node{node, nil, value}
 	lst.length++
 	return lst.length
 }
@@ -91,15 +91,15 @@ func (lst *LinkedList) Append(value interface{}) int {
 // Prepend adds a node to the beginning of the linked list and
 // returns the new list length
 func (lst *LinkedList) Prepend(value interface{}) int {
-	if lst.head == nil {
-		lst.head = &Node{nil, nil, value}
+	if lst.Head == nil {
+		lst.Head = &Node{nil, nil, value}
 		lst.length++
 		return 0
 	}
 
-	node := lst.head
-	lst.head = &Node{nil, node, value}
-	node.prev = lst.head
+	node := lst.Head
+	lst.Head = &Node{nil, node, value}
+	node.Prev = lst.Head
 	lst.length++
 	return lst.length
 }
@@ -110,16 +110,16 @@ func (lst *LinkedList) Insert(index int, value interface{}) error {
 		return errors.New("index error")
 	}
 
-	node := lst.head
+	node := lst.Head
 	for i := 1; i != index; i++ {
-		node = node.next
+		node = node.Next
 	}
 
-	newNode := &Node{node, node.next, value}
-	if node.next != nil {
-		node.next.prev = newNode
+	newNode := &Node{node, node.Next, value}
+	if node.Next != nil {
+		node.Next.Prev = newNode
 	}
-	node.next = newNode
+	node.Next = newNode
 	lst.length++
 	return nil
 }
@@ -127,26 +127,33 @@ func (lst *LinkedList) Insert(index int, value interface{}) error {
 // Delete removes the node at *index* and returns the deleted
 // nodes' value. If *index* is out of bounds, returns an error.
 func (lst *LinkedList) Delete(index int) (interface{}, error) {
-	if lst.head == nil {
+	if lst.Head == nil {
 		return 0, errors.New("empty list")
 	}
 	if index < 0 {
 		return 0, errors.New("index may not be negative")
 	}
 
-	node := lst.head
+	node := lst.Head
+
+	if index == 0 {
+		lst.Head = lst.Head.Next
+		lst.length = 0
+		return node.Value, nil
+	}
+
 	for i := 0; i != index; i++ {
-		if node.next == nil {
+		if node.Next == nil {
 			return 0, errors.New("index error")
 		}
-		node = node.next
+		node = node.Next
 	}
-	if node.prev != nil {
-		node.prev.next = node.next
+	if node.Prev != nil {
+		node.Prev.Next = node.Next
 	}
-	if node.next != nil {
-		node.next.prev = node.prev
+	if node.Next != nil {
+		node.Next.Prev = node.Prev
 	}
 	lst.length--
-	return node.value, nil
+	return node.Value, nil
 }

@@ -14,7 +14,7 @@ func TestNew(t *testing.T) {
 		t.Fail()
 	}
 
-	if lst.head != nil {
+	if lst.Head != nil {
 		t.Fail()
 	}
 
@@ -31,12 +31,12 @@ func TestNew(t *testing.T) {
 func TestAppend(t *testing.T) {
 	lst := New()
 	lst.Append(42)
-	if lst.head.value.(int) != 42 {
+	if lst.Head.Value.(int) != 42 {
 		t.Fail()
 	}
 
 	lst.Append(63)
-	if lst.head.next.value.(int) != 63 {
+	if lst.Head.Next.Value.(int) != 63 {
 		t.Fail()
 	}
 
@@ -49,12 +49,12 @@ func TestAppend(t *testing.T) {
 func TestPrepend(t *testing.T) {
 	lst := New()
 	lst.Prepend(42)
-	if lst.head.value.(int) != 42 {
+	if lst.Head.Value.(int) != 42 {
 		t.Fail()
 	}
 
 	lst.Prepend(63)
-	if lst.head.value.(int) != 63 {
+	if lst.Head.Value.(int) != 63 {
 		t.Fail()
 	}
 
@@ -103,11 +103,11 @@ func TestSet(t *testing.T) {
 
 	lst.Set(0, -42)
 	lst.Set(1, 17)
-	if lst.head.value.(int) != -42 {
+	if lst.Head.Value.(int) != -42 {
 		t.Fail()
 	}
 
-	if lst.head.next.value.(int) != 17 {
+	if lst.Head.Next.Value.(int) != 17 {
 		t.Fail()
 	}
 
@@ -136,7 +136,7 @@ func TestInsert(t *testing.T) {
 	if err != nil {
 		t.Error()
 	}
-	if lst.head.next.next.value.(int) != 43 {
+	if lst.Head.Next.Next.Value.(int) != 43 {
 		t.Fail()
 	}
 	if lst.Length() != 4 {
@@ -161,11 +161,28 @@ func TestDelete(t *testing.T) {
 		t.Fail()
 	}
 
+	// List length 1
+	lst.Append(63)
+	label, err := lst.Delete(0)
+	if err != nil {
+		t.Error()
+	}
+	if label.(int) != 63 {
+		t.Fail()
+	}
+	if lst.Length() != 0 {
+		t.Fail()
+	}
+	if lst.Head != nil {
+		t.Fail()
+	}
+
+	// Multiple items in the list
 	lst.Prepend(42)
 	lst.Append(63)
 	lst.Append(100)
 
-	label, err := lst.Delete(1)
+	label, err = lst.Delete(1)
 	if err != nil {
 		t.Error()
 	}
