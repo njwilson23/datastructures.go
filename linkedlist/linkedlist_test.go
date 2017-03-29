@@ -86,12 +86,12 @@ func TestGet(t *testing.T) {
 	}
 
 	_, err = lst.Get(2)
-	if err == nil {
+	if err != INDEX_ERROR {
 		t.Fail()
 	}
 
 	_, err = lst.Get(-1)
-	if err == nil {
+	if err != INDEX_ERROR {
 		t.Fail()
 	}
 }
@@ -112,12 +112,12 @@ func TestSet(t *testing.T) {
 	}
 
 	err := lst.Set(2, 0)
-	if err == nil {
+	if err != INDEX_ERROR {
 		t.Fail()
 	}
 
 	err = lst.Set(-1, 0)
-	if err == nil {
+	if err != INDEX_ERROR {
 		t.Fail()
 	}
 }
@@ -125,7 +125,7 @@ func TestSet(t *testing.T) {
 func TestInsert(t *testing.T) {
 	lst := New()
 	err := lst.Insert(0, 0)
-	if err == nil {
+	if err != INDEX_ERROR {
 		t.Fail()
 	}
 
@@ -144,11 +144,11 @@ func TestInsert(t *testing.T) {
 	}
 
 	err = lst.Insert(-1, 0)
-	if err == nil {
+	if err != INDEX_ERROR {
 		t.Fail()
 	}
 	err = lst.Insert(4, 0)
-	if err == nil {
+	if err != INDEX_ERROR {
 		t.Fail()
 	}
 }
@@ -157,7 +157,7 @@ func TestDelete(t *testing.T) {
 	lst := New()
 
 	_, err := lst.Delete(0)
-	if err == nil {
+	if err != INDEX_ERROR {
 		t.Fail()
 	}
 
@@ -194,7 +194,7 @@ func TestDelete(t *testing.T) {
 	}
 
 	_, err = lst.Delete(-1)
-	if err == nil {
+	if err != INDEX_ERROR {
 		t.Fail()
 	}
 

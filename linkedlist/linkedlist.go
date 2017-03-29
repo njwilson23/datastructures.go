@@ -8,9 +8,9 @@
 
 package linkedlist
 
-import (
-	"errors"
-)
+import "errors"
+
+var INDEX_ERROR = errors.New("out-of-range index error")
 
 // Node is a linked list item
 type Node struct {
@@ -40,10 +40,10 @@ func (lst *LinkedList) Length() int {
 func (lst *LinkedList) Get(index int) (interface{}, error) {
 	node := lst.Head
 	if node == nil {
-		return 0, errors.New("empty list")
+		return 0, INDEX_ERROR
 	}
 	if index < 0 || index >= lst.length {
-		return 0, errors.New("index error")
+		return 0, INDEX_ERROR
 	}
 	for i := 0; i != index; i++ {
 		node = node.Next
@@ -56,10 +56,10 @@ func (lst *LinkedList) Get(index int) (interface{}, error) {
 func (lst *LinkedList) Set(index int, value interface{}) error {
 	node := lst.Head
 	if node == nil {
-		return errors.New("empty list")
+		return INDEX_ERROR
 	}
 	if index < 0 || index >= lst.length {
-		return errors.New("index error")
+		return INDEX_ERROR
 	}
 	for i := 0; i != index; i++ {
 		node = node.Next
@@ -107,7 +107,7 @@ func (lst *LinkedList) Prepend(value interface{}) int {
 // Insert places a new Node in the middle of a linked list, or returns an error
 func (lst *LinkedList) Insert(index int, value interface{}) error {
 	if index < 0 || index >= lst.length {
-		return errors.New("index error")
+		return INDEX_ERROR
 	}
 
 	node := lst.Head
@@ -128,10 +128,10 @@ func (lst *LinkedList) Insert(index int, value interface{}) error {
 // nodes' value. If *index* is out of bounds, returns an error.
 func (lst *LinkedList) Delete(index int) (interface{}, error) {
 	if lst.Head == nil {
-		return 0, errors.New("empty list")
+		return 0, INDEX_ERROR
 	}
 	if index < 0 {
-		return 0, errors.New("index may not be negative")
+		return 0, INDEX_ERROR
 	}
 
 	node := lst.Head
@@ -144,7 +144,7 @@ func (lst *LinkedList) Delete(index int) (interface{}, error) {
 
 	for i := 0; i != index; i++ {
 		if node.Next == nil {
-			return 0, errors.New("index error")
+			return 0, INDEX_ERROR
 		}
 		node = node.Next
 	}
