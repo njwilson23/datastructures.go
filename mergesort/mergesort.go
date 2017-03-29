@@ -1,13 +1,32 @@
+/*
+ * Merge-sort is a divide-and-conquor algorithm for sorting arrays of objects.
+ * Although not really a data structure in the sense of the other algorithms
+ * in this repository, I've included merge sort because it provides a nice
+ * demonstration of manipulating array data structures in both a top-down and a
+ * bottom-up manner.
+ *
+ * In the top down approach, the array is sub-divided repeatedly until each
+ * subarray is only one item long, and these are then merged back up the call
+ * stack in a way that the pieces at every level are sorted.
+ *
+ * In the bottom up approach, we start with atomic array elements, and
+ * agglomerate them into increasingly large sorted segments.
+ *
+ * Both versions of this algorithm have O(n log n) time performance, however
+ * the bottom-up version below is implemented without needing a stack of calling
+ * frames can so may be preferable in a language such as Go.
+ */
+
 package mergesort
 
-// MergeSortRecursive implements a "top-down" recursive merge sort algorithm
-func MergeSortRecursive(sortable []int) []int {
+// RecursiveMergeSort implements a "top-down" recursive merge sort algorithm
+func RecursiveMergeSort(sortable []int) []int {
 	n := len(sortable)
 	if n == 1 {
 		return sortable
 	}
-	left := MergeSortRecursive(sortable[:n/2])
-	right := MergeSortRecursive(sortable[n/2:])
+	left := RecursiveMergeSort(sortable[:n/2])
+	right := RecursiveMergeSort(sortable[n/2:])
 	return merge(left, right)
 }
 

@@ -45,9 +45,9 @@ func TestMergeSort(t *testing.T) {
 	}
 }
 
-func TestMergeSortRecursive(t *testing.T) {
+func TestRecursiveMergeSort(t *testing.T) {
 	data := []int{43, 27, 8, 3, 75, 6, 32, 61, 3, 12, 6, 3}
-	sortedData := MergeSortRecursive(data)
+	sortedData := RecursiveMergeSort(data)
 	if !slicesEqual(sortedData, []int{3, 3, 3, 6, 6, 8, 12, 27, 32, 43, 61, 75}) {
 		t.Fail()
 	}
