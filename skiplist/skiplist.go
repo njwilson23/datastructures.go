@@ -1,22 +1,22 @@
 /*
- A skip-list is a probabalistic data structure similar to a binary tree.
- Unlike a balanced binary tree (see rbtree), a skip-list is approximately
- balanced.
+ * Package skiplist implements a skip-list. A skip-list is a probabalistic data
+ * structure similar to a binary tree. Unlike a balanced binary tree (see
+ * package rbtree), a skip-list is approximately balanced.
+ *
+ * The bottom layer of a skip-list is a linked list (singly-linked, in this
+ * implementation). Subsequent layers are built on top of this layer by
+ * including each list node with a probability *p*.
 
- The bottom layer of a skip-list is a linked list (singly-linked, in this
- implementation). Subsequent layers are built on top of this layer by
- including each list node with a probability *p*.
+ *    L3  *  (head node)
+ *    L2  *                    *             *          (sparse linked lists of
+ *    L1  *      *             *             *     *     randomly included nodes)
+ *    L0  ********************************************* (data in a linked list)
 
-	L3	head
-    L2    *                    *             *
-    L1    *      *             *             *     *    (randomly included nodes)
-	L0	********************************************* 	(data in a linked list)
-
- When searching the skip-list, we start at the top (head) node, and move
- downward and to the right. When moving to the right would cause the key of
- the next node to exceed the key we're searching for, we move downward
- instead.
-*/
+ * When searching the skip-list, we start at the top (head) node, and move
+ * downward and to the right. When moving to the right would cause the key of
+ * the next node to exceed the key we're searching for, we move downward
+ * instead.
+ */
 
 package skiplist
 
@@ -149,7 +149,7 @@ func (n *Node) Insert(item *Item, p float64) error {
 		n.below = insertLeftCol(item, n)
 
 		// prune the previous left column
-		pruneRight(n.below, p)
+		pruneSecond(n.below, p)
 		return nil
 	}
 
@@ -162,33 +162,6 @@ func (n *Node) Insert(item *Item, p float64) error {
 		n.next = nil
 	}
 	return nil
-}
-
-// prune right looks at the item to the left of the head node (second item in
-// the list) and decides retroactively whether to propagate it upward
-func pruneRight(n *Node, p float64) bool {
-	if n.below == nil {
-		return rand.Float64() < p
-	}
-	hoisted := pruneRight(n.below, p)
-	if hoisted {
-		return rand.Float64() < p
-	}
-	n.next = n.next.next // if the test below failed, delete the reference to the right
-	return false
-}
-
-// insertLeftCol adds a new tower of nodes to the left side of the skip-list.
-// Unlike other items in the left, the left most item is guaranteed to alway
-// bubble up to the next level
-func insertLeftCol(item *Item, n *Node) (below *Node) {
-	if n.below == nil {
-		below = &Node{n.next, nil, item}
-	} else {
-		below = insertLeftCol(item, n.below)
-		below = &Node{below.next, below.below, item}
-	}
-	return
 }
 
 // insertRight is the recursive helper function called by Insert. It takes an
@@ -210,6 +183,33 @@ func insertRight(item *Item, n *Node, p float64) (nodeInsertedBelow *Node) {
 		if rand.Float64() >= p {
 			nodeInsertedBelow = nil
 		}
+	}
+	return
+}
+
+// pruneSecond looks at the item to the left of the head node (second item in
+// the list) and decides retroactively whether to propagate it upward
+func pruneSecond(n *Node, p float64) bool {
+	if n.below == nil {
+		return rand.Float64() < p
+	}
+	hoisted := pruneSecond(n.below, p)
+	if hoisted {
+		return rand.Float64() < p
+	}
+	n.next = n.next.next // if the test below failed, delete the reference to the right
+	return false
+}
+
+// insertLeftCol adds a new tower of nodes to the left side of the skip-list.
+// Unlike other items in the list, the left most item is guaranteed to alway
+// bubble up to the next level
+func insertLeftCol(item *Item, n *Node) (below *Node) {
+	if n.below == nil {
+		below = &Node{n.next, nil, item}
+	} else {
+		below = insertLeftCol(item, n.below)
+		below = &Node{below.next, below.below, item}
 	}
 	return
 }

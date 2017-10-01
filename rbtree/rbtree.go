@@ -1,5 +1,5 @@
 /*
- * Red-black tree
+ * Package rbtree implements a red-black balanced binary tree.
  *
  * A red-black tree is a balanced binary tree, which guarantees O(log n)
  * complexity for adding, deleting, and searching for elements.

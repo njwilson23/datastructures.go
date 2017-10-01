@@ -1,12 +1,20 @@
+/*
+ * Package heap demonstrates a heap data structure
+ *
+ * A heap is a tree that maintains a heap invariant. The heap invariant in a
+ * max-heap requires every parent to have a larger value than its children.
+ * Heaps can be used as priority queues or as sorted mutable collections.
+ */
+
 package heap
 
 import (
 	"errors"
 )
 
-var OVERFLOW_ERROR = errors.New("heap is at maximum size")
+var ErrOverflow = errors.New("heap is at maximum size")
 
-var EMPTY_HEAP_ERROR = errors.New("empty heap")
+var ErrEmpty = errors.New("empty heap")
 
 type Heap struct {
 	value    []float64
@@ -15,6 +23,7 @@ type Heap struct {
 	capacity int
 }
 
+// New creates a new max-heap data structure
 func New(capacity int) *Heap {
 	return &Heap{make([]float64, capacity), make([]int, capacity), 0, capacity}
 }
@@ -49,14 +58,14 @@ func (h *Heap) MaxHeapify(i int) {
 
 func (h *Heap) Maximum() (int, float64, error) {
 	if h.size == 0 {
-		return 0, 0.0, EMPTY_HEAP_ERROR
+		return 0, 0.0, ErrEmpty
 	}
 	return h.label[0], h.value[0], nil
 }
 
 func (h *Heap) ExtractMaximum() (int, float64, error) {
 	if h.size == 0 {
-		return 0, 0.0, EMPTY_HEAP_ERROR
+		return 0, 0.0, ErrEmpty
 	}
 	labelMax, valueMax, _ := h.Maximum()
 	h.size--
