@@ -22,7 +22,7 @@ func TestSkipListGet(t *testing.T) {
 	})
 
 	rand.Seed(17)
-	headNode := NewSkipList(items, 0.1)
+	headNode := New(items, 0.1)
 	if headNode.Depth() != 2 {
 		t.Fail()
 	}

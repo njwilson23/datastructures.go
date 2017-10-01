@@ -1,12 +1,3 @@
-package skiplist
-
-import (
-	"errors"
-	"fmt"
-	"math/rand"
-	"sort"
-)
-
 /*
  A skip-list is a probabalistic data structure similar to a binary tree.
  Unlike a balanced binary tree (see rbtree), a skip-list is approximately
@@ -17,8 +8,8 @@ import (
  including each list node with a probability *p*.
 
 	L3	head
-	L2	*					 *			   *
-	L1	*      *             *             *     *	  	(randomly included nodes)
+    L2    *                    *             *
+    L1    *      *             *             *     *    (randomly included nodes)
 	L0	********************************************* 	(data in a linked list)
 
  When searching the skip-list, we start at the top (head) node, and move
@@ -26,6 +17,15 @@ import (
  the next node to exceed the key we're searching for, we move downward
  instead.
 */
+
+package skiplist
+
+import (
+	"errors"
+	"fmt"
+	"math/rand"
+	"sort"
+)
 
 type Item struct {
 	key   int
@@ -60,11 +60,10 @@ func (n *Node) Depth() int {
 	return 1 + n.below.Depth()
 }
 
-// NewSkipList assembles a skip-list from a list of Items, where each node is
-// contained in the layer above with probability p. The final layer contains a
-// single head node, which is the return value.
-func NewSkipList(items ItemSlice, p float64) *Node {
-
+// New assembles a skip-list from a list of Items, where each node is contained
+// in the layer above with probability p. The final layer contains a single head
+// node, which is the return value.
+func New(items ItemSlice, p float64) *Node {
 	if !sort.IsSorted(items) {
 		sort.Sort(items)
 	}
@@ -130,4 +129,87 @@ func (n *Node) Get(key int) (*Item, error) {
 	} else {
 		return n.next.Get(key)
 	}
+}
+
+// Insert adds a new item to the skip-list. There are two important
+// possibilities: - the item may be to the left of the head node - the item may
+// be to the right of the head node
+//
+// In the first case, we replace the head node, and then run up the tower of
+// nodes below the previous head and determine whether each node above the base
+// layer should continue to exist.
+//
+// In the second case, we call a recursive function that inserts the item into
+// the bottom most linked list and then bubbles up whether the node is kept as
+// an index in the layer above.
+func (n *Node) Insert(item *Item, p float64) error {
+
+	// Handle the first case
+	if item.key < n.item.key {
+		n.below = insertLeftCol(item, n)
+
+		// prune the previous left column
+		pruneRight(n.below, p)
+		return nil
+	}
+
+	// Handle the second case
+	nodeInsertedBelow := insertRight(item, n.below, p)
+	if nodeInsertedBelow != nil {
+		// The head node needs to be replaced because we permit only one node at the
+		// top level (why?)
+		n.below = &Node{n.next, n.below, n.item}
+		n.next = nil
+	}
+	return nil
+}
+
+// prune right looks at the item to the left of the head node (second item in
+// the list) and decides retroactively whether to propagate it upward
+func pruneRight(n *Node, p float64) bool {
+	if n.below == nil {
+		return rand.Float64() < p
+	}
+	hoisted := pruneRight(n.below, p)
+	if hoisted {
+		return rand.Float64() < p
+	}
+	n.next = n.next.next // if the test below failed, delete the reference to the right
+	return false
+}
+
+// insertLeftCol adds a new tower of nodes to the left side of the skip-list.
+// Unlike other items in the left, the left most item is guaranteed to alway
+// bubble up to the next level
+func insertLeftCol(item *Item, n *Node) (below *Node) {
+	if n.below == nil {
+		below = &Node{n.next, nil, item}
+	} else {
+		below = insertLeftCol(item, n.below)
+		below = &Node{below.next, below.below, item}
+	}
+	return
+}
+
+// insertRight is the recursive helper function called by Insert. It takes an
+// item to insert, a node to the left of where the item should go, and a
+// probability that the node will appear in the list index above.
+//
+// It returns a non-nil pointer to the inserted node iff a reference to the node
+// should be added to the index list above.
+func insertRight(item *Item, n *Node, p float64) (nodeInsertedBelow *Node) {
+	if n.below != nil {
+		nodeInsertedBelow = insertRight(item, n.below, p)
+	}
+
+	if nodeInsertedBelow != nil {
+		for n.next != nil && n.next.item.key < item.key {
+			n = n.next
+		}
+		n.next = &Node{n.next, nodeInsertedBelow.below, item}
+		if rand.Float64() >= p {
+			nodeInsertedBelow = nil
+		}
+	}
+	return
 }
