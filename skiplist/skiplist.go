@@ -86,7 +86,7 @@ func New(items ItemSlice, p float64) *Node {
 		node = nodes[0]
 		nodesAbove := []*Node{&Node{nil, node, node.item}}
 
-		pos := 0
+		pos := 1
 		for node.next != nil {
 			if rand.Float64() < p {
 				nodesAbove = append(nodesAbove, &Node{
@@ -106,10 +106,10 @@ func New(items ItemSlice, p float64) *Node {
 }
 
 func (n *Node) PrintKeys() {
-	node := n
-	fmt.Printf("%5d ", n.item.key)
-	for node.next != nil {
-		fmt.Printf("%5d ", node.next.item.key)
+	fmt.Printf("%5d| ", n.item.key)
+	node := n.next
+	for node != nil {
+		fmt.Printf("%5d ", node.item.key)
 		node = node.next
 	}
 	fmt.Print("\n")
@@ -142,24 +142,25 @@ func (n *Node) Get(key int) (*Item, error) {
 // In the second case, we call a recursive function that inserts the item into
 // the bottom most linked list and then bubbles up whether the node is kept as
 // an index in the layer above.
-func (n *Node) Insert(item *Item, p float64) error {
+func (head *Node) Insert(item *Item, p float64) error {
 
 	// Handle the first case
-	if item.key < n.item.key {
-		n.below = insertLeftCol(item, n)
+	if item.key < head.item.key {
+		head.below = insertLeftCol(item, head.below)
+		head.item = item
 
 		// prune the previous left column
-		pruneSecond(n.below, p)
+		pruneSecond(head.below, p)
 		return nil
 	}
 
 	// Handle the second case
-	nodeInsertedBelow := insertRight(item, n.below, p)
+	nodeInsertedBelow := insertRight(item, head.below, p)
 	if nodeInsertedBelow != nil {
 		// The head node needs to be replaced because we permit only one node at the
 		// top level (why?)
-		n.below = &Node{n.next, n.below, n.item}
-		n.next = nil
+		head.below = &Node{head.next, head.below, head.item}
+		head.next = nil
 	}
 	return nil
 }
@@ -175,6 +176,11 @@ func insertRight(item *Item, n *Node, p float64) (nodeInsertedBelow *Node) {
 		nodeInsertedBelow = insertRight(item, n.below, p)
 	}
 
+	if n.below == nil {
+		// This is the data level, so create node to insert here
+		nodeInsertedBelow = &Node{nil, nil, item}
+	}
+
 	if nodeInsertedBelow != nil {
 		for n.next != nil && n.next.item.key < item.key {
 			n = n.next
@@ -183,6 +189,19 @@ func insertRight(item *Item, n *Node, p float64) (nodeInsertedBelow *Node) {
 		if rand.Float64() >= p {
 			nodeInsertedBelow = nil
 		}
+	}
+	return
+}
+
+// insertLeftCol adds a new tower of nodes to the left side of the skip-list.
+// Unlike other items in the list, the left most item is guaranteed to always
+// bubble up to the next level
+func insertLeftCol(item *Item, head *Node) (inserted *Node) {
+	if head.below == nil {
+		inserted = &Node{head, nil, item}
+	} else {
+		below := insertLeftCol(item, head.below)
+		inserted = &Node{head, below, item}
 	}
 	return
 }
@@ -199,17 +218,4 @@ func pruneSecond(n *Node, p float64) bool {
 	}
 	n.next = n.next.next // if the test below failed, delete the reference to the right
 	return false
-}
-
-// insertLeftCol adds a new tower of nodes to the left side of the skip-list.
-// Unlike other items in the list, the left most item is guaranteed to alway
-// bubble up to the next level
-func insertLeftCol(item *Item, n *Node) (below *Node) {
-	if n.below == nil {
-		below = &Node{n.next, nil, item}
-	} else {
-		below = insertLeftCol(item, n.below)
-		below = &Node{below.next, below.below, item}
-	}
-	return
 }
