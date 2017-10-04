@@ -69,30 +69,28 @@ func New(items ItemSlice, p float64) *Node {
 	}
 
 	// build the bottom layer
-	nodes := make([]*Node, len(items))
-	var node, prevNode *Node
+	nodes := make([]*Node, len(items)+1)
+	nodes[0] = &Node{nil, nil, nil}
+
 	for i := range items {
-		node = &Node{nil, nil, &items[i]}
-		if i != 0 {
-			prevNode.next = node
-		}
-		nodes[i] = node
-		prevNode = node
+		nodes[i+1] = &Node{nil, nil, &items[i]}
+		nodes[i].next = nodes[i+1]
 	}
 
 	// Build layers until left with only a head node
+	var node *Node
 	for len(nodes) != 1 {
 
-		node = nodes[0]
-		nodesAbove := []*Node{&Node{nil, node, node.item}}
+		node = nodes[1]
+		nodesAbove := []*Node{&Node{nil, nodes[0], nil}}
 
 		pos := 1
-		for node.next != nil {
+		for node != nil {
 			if rand.Float64() < p {
 				nodesAbove = append(nodesAbove, &Node{
 					next:  nil,
-					below: nodes[pos],
-					item:  nodes[pos].item,
+					below: node,
+					item:  node.item,
 				})
 				nodesAbove[len(nodesAbove)-2].next = nodesAbove[len(nodesAbove)-1]
 			}
@@ -102,11 +100,12 @@ func New(items ItemSlice, p float64) *Node {
 
 		nodes = nodesAbove
 	}
+
 	return nodes[0]
 }
 
 func (n *Node) PrintKeys() {
-	fmt.Printf("%5d| ", n.item.key)
+	fmt.Print("*")
 	node := n.next
 	for node != nil {
 		fmt.Printf("%5d ", node.item.key)
@@ -119,15 +118,33 @@ func (n *Node) PrintKeys() {
 	}
 }
 
+// Get returns an item from the skip-list by key, or a non-nil error if the item is not found
 func (n *Node) Get(key int) (*Item, error) {
+	if n.below.next.item.key > key {
+		return n.below.Get(key)
+	}
+	return get(n.below.next, key)
+}
+
+func get(n *Node, key int) (*Item, error) {
+	// check for a direct shortcut
 	if n.item.key == key {
 		return n.item, nil
-	} else if n.item.key > key {
-		return nil, errors.New("index error")
-	} else if n.next == nil || n.next.item.key > key {
-		return n.below.Get(key)
+	}
+
+	// linear search on data layer
+	if n.below == nil {
+		if n.next == nil || n.next.item.key > key {
+			return nil, errors.New("index error")
+		}
+		return get(n.next, key) // TODO: expand as loop
+	}
+
+	// choose whether to move down or right
+	if n.next == nil || n.next.item.key > key {
+		return get(n.below, key)
 	} else {
-		return n.next.Get(key)
+		return get(n.next, key)
 	}
 }
 
@@ -144,18 +161,8 @@ func (n *Node) Get(key int) (*Item, error) {
 // an index in the layer above.
 func (head *Node) Insert(item *Item, p float64) error {
 
-	// Handle the first case
-	if item.key < head.item.key {
-		head.below = insertLeftCol(item, head.below)
-		head.item = item
-
-		// prune the previous left column
-		pruneSecond(head.below, p)
-		return nil
-	}
-
 	// Handle the second case
-	nodeInsertedBelow := insertRight(item, head.below, p)
+	nodeInsertedBelow := insert(item, head.below, p)
 	if nodeInsertedBelow != nil {
 		// The head node needs to be replaced because we permit only one node at the
 		// top level (why?)
@@ -165,15 +172,15 @@ func (head *Node) Insert(item *Item, p float64) error {
 	return nil
 }
 
-// insertRight is the recursive helper function called by Insert. It takes an
-// item to insert, a node to the left of where the item should go, and a
-// probability that the node will appear in the list index above.
+// insert is the recursive helper function called by Insert. It takes an item to
+// insert, a node to the left of where the item should go, and a probability
+// that the node will appear in the list index above.
 //
 // It returns a non-nil pointer to the inserted node iff a reference to the node
 // should be added to the index list above.
-func insertRight(item *Item, n *Node, p float64) (nodeInsertedBelow *Node) {
+func insert(item *Item, n *Node, p float64) (nodeInsertedBelow *Node) {
 	if n.below != nil {
-		nodeInsertedBelow = insertRight(item, n.below, p)
+		nodeInsertedBelow = insert(item, n.below, p)
 	}
 
 	if n.below == nil {
@@ -191,31 +198,4 @@ func insertRight(item *Item, n *Node, p float64) (nodeInsertedBelow *Node) {
 		}
 	}
 	return
-}
-
-// insertLeftCol adds a new tower of nodes to the left side of the skip-list.
-// Unlike other items in the list, the left most item is guaranteed to always
-// bubble up to the next level
-func insertLeftCol(item *Item, head *Node) (inserted *Node) {
-	if head.below == nil {
-		inserted = &Node{head, nil, item}
-	} else {
-		below := insertLeftCol(item, head.below)
-		inserted = &Node{head, below, item}
-	}
-	return
-}
-
-// pruneSecond looks at the item to the left of the head node (second item in
-// the list) and decides retroactively whether to propagate it upward
-func pruneSecond(n *Node, p float64) bool {
-	if n.below == nil {
-		return rand.Float64() < p
-	}
-	hoisted := pruneSecond(n.below, p)
-	if hoisted {
-		return rand.Float64() < p
-	}
-	n.next = n.next.next // if the test below failed, delete the reference to the right
-	return false
 }
